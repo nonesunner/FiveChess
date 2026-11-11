@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>五子棋 Web SPA (獨立單檔版)</title>
+  <style>
+/* ==========================================================================
+   五子棋 Web SPA 視覺樣式表 (Minimalist Light Mode)
+   ========================================================================== */
+
+:root {
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-secondary: #64748b;
+  --color-secondary-hover: #475569;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --board-wood: #f1ebd8;
+  --board-line: #78716c;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px;
+  line-height: 1.5;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 660px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 遊戲標題與資訊區 */
+.game-header {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.game-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.game-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* 卡片基底 */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 20px;
+}
+
+/* 控制面板 */
+.control-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.form-control {
+  font-size: 14px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: #ffffff;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background-color: #f1f5f9;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* 狀態面板 */
+.status-panel {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.status-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.status-value {
+  font-weight: 600;
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 16px;
+}
+
+.badge-turn {
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 13px;
+}
+
+.turn-black {
+  background-color: #0f172a;
+  color: #ffffff;
+}
+
+.turn-white {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid var(--border-color);
+}
+
+.turn-thinking {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+/* 棋盤畫布容器 */
+.board-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+#chessBoard {
+  background-color: var(--board-wood);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+/* 結算提示彈窗 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+  opacity: 0;
+}
+
+.modal-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 90%;
+  max-width: 360px;
+  padding: 24px;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+
+.modal-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* 行動端與窄螢幕適配 */
+@media (max-width: 640px) {
+  body {
+    padding: 12px 8px;
+  }
+
+  .card {
+    padding: 12px 14px;
+  }
+
+  .board-wrapper {
+    padding: 8px;
+  }
+
+  .control-panel {
+    justify-content: center;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 標題與資訊區 -->
+    <header class="game-header">
+      <h1 class="game-title">五子棋 對弈系統</h1>
+      <p class="game-subtitle">簡約現代風格 · 單頁應用 (SPA)</p>
+    </header>
+
+    <!-- 控制面板卡片 -->
+    <section class="control-panel card">
+      <div class="control-group">
+        <label for="gameMode">對戰模式：</label>
+        <select id="gameMode" class="form-control">
+          <option value="pve" selected>人機對戰</option>
+          <option value="pvp">雙人對戰</option>
+        </select>
+      </div>
+
+      <div class="control-group" id="difficultyGroup">
+        <label for="difficulty">難度選擇：</label>
+        <select id="difficulty" class="form-control">
+          <option value="easy">簡單</option>
+          <option value="normal" selected>普通</option>
+          <option value="hard">困難</option>
+        </select>
+      </div>
+
+      <div class="action-buttons">
+        <button id="btnRestart" class="btn btn-primary">重新開始</button>
+        <button id="btnUndo" class="btn btn-secondary">悔棋</button>
+      </div>
+    </section>
+
+    <!-- 狀態展示區 -->
+    <section class="status-panel card">
+      <div class="status-item">
+        <span class="status-label">當前回合：</span>
+        <span id="currentTurn" class="status-value badge-turn turn-black">黑棋落子</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">總落子數：</span>
+        <span id="moveCount" class="status-value font-mono">0</span>
+      </div>
+    </section>
+
+    <!-- 棋盤畫布容器 -->
+    <main class="board-wrapper card">
+      <canvas id="chessBoard" width="600" height="600"></canvas>
+    </main>
+
+    <!-- 勝利結算提示彈窗 -->
+    <div id="modalWinner" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="winnerText" class="modal-title">黑棋獲勝！</h2>
+        </div>
+        <p class="modal-desc">恭喜完成精彩對局！</p>
+        <div class="modal-actions">
+          <button id="btnPlayAgain" class="btn btn-primary">再玩一局</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/**
+ * 五子棋遊戲規則與勝負判定模組
+ * 負責落子合法性驗證、四向連珠勝負判定、和局判定與棋盤資料結構工具
+ */
+class GameRules {
+  static BOARD_SIZE = 15;
+  static ROLE_EMPTY = 0;
+  static ROLE_BLACK = 1;
+  static ROLE_WHITE = 2;
+
+  // 四個檢查軸向：水平、垂直、正斜線、反斜線
+  static DIRECTIONS = [
+    { dx: 1, dy: 0 },   // 水平
+    { dx: 0, dy: 1 },   // 垂直
+    { dx: 1, dy: 1 },   // 正斜線 (左上到右下)
+    { dx: 1, dy: -1 }   // 反斜線 (左下到右上)
+  ];
+
+  /**
+   * 建立預設 15x15 全 0 之棋盤二維陣列
+   * @returns {Array<Array<number>>}
+   */
+  static createEmptyBoard() {
+    const size = GameRules.BOARD_SIZE;
+    const board = new Array(size);
+    for (let r = 0; r < size; r++) {
+      board[r] = new Array(size).fill(GameRules.ROLE_EMPTY);
+    }
+    return board;
+  }
+
+  /**
+   * 深拷貝棋盤資料
+   * @param {Array<Array<number>>} boardMatrix 
+   * @returns {Array<Array<number>>}
+   */
+  static cloneBoard(boardMatrix) {
+    if (!boardMatrix) return GameRules.createEmptyBoard();
+    const size = boardMatrix.length;
+    const cloned = new Array(size);
+    for (let r = 0; r < size; r++) {
+      cloned[r] = boardMatrix[r].slice();
+    }
+    return cloned;
+  }
+
+  /**
+   * 驗證落子是否合法
+   * @param {Array<Array<number>>} boardMatrix 
+   * @param {number} x 網格 x 座標 (0~14)
+   * @param {number} y 網格 y 座標 (0~14)
+   * @returns {boolean}
+   */
+  static isValidMove(boardMatrix, x, y) {
+    const size = GameRules.BOARD_SIZE;
+    if (x == null || y == null) return false;
+    if (x < 0 || x >= size || y < 0 || y >= size) return false;
+    return boardMatrix[y][x] === GameRules.ROLE_EMPTY;
+  }
+
+  /**
+   * 檢查最新落子是否達成五連珠獲勝
+   * @param {Array<Array<number>>} boardMatrix 
+   * @param {number} lastX 
+   * @param {number} lastY 
+   * @param {number} role 1: 黑子, 2: 白子
+   * @returns {{win: boolean, winner?: number, line?: Array<{x: number, y: number}>}}
+   */
+  static checkWin(boardMatrix, lastX, lastY, role) {
+    if (!role || lastX == null || lastY == null) {
+      return { win: false };
+    }
+
+    const size = GameRules.BOARD_SIZE;
+
+    for (let d = 0; d < GameRules.DIRECTIONS.length; d++) {
+      const { dx, dy } = GameRules.DIRECTIONS[d];
+      const winningLine = [{ x: lastX, y: lastY }];
+
+      // 正向搜尋 (例如右、下、右下、右上)
+      let step = 1;
+      while (true) {
+        const nx = lastX + dx * step;
+        const ny = lastY + dy * step;
+        if (nx < 0 || nx >= size || ny < 0 || ny >= size) break;
+        if (boardMatrix[ny][nx] !== role) break;
+        winningLine.push({ x: nx, y: ny });
+        step++;
+      }
+
+      // 反向搜尋 (例如左、上、左上、左下)
+      step = 1;
+      while (true) {
+        const nx = lastX - dx * step;
+        const ny = lastY - dy * step;
+        if (nx < 0 || nx >= size || ny < 0 || ny >= size) break;
+        if (boardMatrix[ny][nx] !== role) break;
+        winningLine.unshift({ x: nx, y: ny });
+        step++;
+      }
+
+      // 連續達到 5 顆（或以上）即判定獲勝
+      if (winningLine.length >= 5) {
+        return {
+          win: true,
+          winner: role,
+          line: winningLine
+        };
+      }
+    }
+
+    return { win: false };
+  }
+
+  /**
+   * 檢查是否和局（棋盤 225 格全滿且無人勝出）
+   * @param {Array<Array<number>>} boardMatrix 
+   * @returns {boolean}
+   */
+  static checkDraw(boardMatrix) {
+    const size = GameRules.BOARD_SIZE;
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (boardMatrix[r][c] === GameRules.ROLE_EMPTY) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+}
+
+// 供全域存取
+window.GameRules = GameRules;
+window.ROLE_EMPTY = GameRules.ROLE_EMPTY;
+window.ROLE_BLACK = GameRules.ROLE_BLACK;
+window.ROLE_WHITE = GameRules.ROLE_WHITE;
+
+/**
+ * 棋盤核心繪圖與互動模組
+ * 負責 Canvas 15x15 棋盤渲染、星位繪製、棋子立體感渲染與座標換算
+ */
+class ChessBoard {
+  static BOARD_SIZE = 15;
+  static STAR_POINTS = [
+    { x: 3, y: 3 },
+    { x: 11, y: 3 },
+    { x: 7, y: 7 }, // 天元
+    { x: 3, y: 11 },
+    { x: 11, y: 11 }
+  ];
+
+  constructor(canvas) {
+    if (typeof canvas === 'string') {
+      this.canvas = document.getElementById(canvas);
+    } else {
+      this.canvas = canvas;
+    }
+    this.ctx = this.canvas.getContext('2d');
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
+
+    // 計算格線與邊距：14 個格子，計算整除或最貼合之格寬
+    this.margin = 20;
+    this.cellSize = (this.width - this.margin * 2) / (ChessBoard.BOARD_SIZE - 1);
+    this.pieceRadius = this.cellSize * 0.42;
+  }
+
+  /**
+   * 清除畫布
+   */
+  clear() {
+    this.ctx.clearRect(0, 0, this.width, this.height);
+  }
+
+  /**
+   * 繪製棋盤底色、格線與星位
+   */
+  drawGrid() {
+    const ctx = this.ctx;
+    const margin = this.margin;
+    const cellSize = this.cellSize;
+    const size = ChessBoard.BOARD_SIZE;
+
+    // 繪製背景底色
+    ctx.fillStyle = '#f1ebd8';
+    ctx.fillRect(0, 0, this.width, this.height);
+
+    // 繪製格線
+    ctx.strokeStyle = '#78716c';
+    ctx.lineWidth = 1;
+
+    for (let i = 0; i < size; i++) {
+      // 橫線
+      ctx.beginPath();
+      ctx.moveTo(margin, margin + i * cellSize);
+      ctx.lineTo(this.width - margin, margin + i * cellSize);
+      ctx.stroke();
+
+      // 直線
+      ctx.beginPath();
+      ctx.moveTo(margin + i * cellSize, margin);
+      ctx.lineTo(margin + i * cellSize, this.height - margin);
+      ctx.stroke();
+    }
+
+    // 繪製外邊框加粗
+    ctx.strokeStyle = '#57534e';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(margin, margin, this.width - margin * 2, this.height - margin * 2);
+
+    // 繪製 5 個星位基準點
+    ctx.fillStyle = '#57534e';
+    for (const pt of ChessBoard.STAR_POINTS) {
+      const cx = margin + pt.x * cellSize;
+      const cy = margin + pt.y * cellSize;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  /**
+   * 繪製單顆棋子（具備光影半徑漸變立體感）
+   * @param {number} x 網格 x 座標 (0~14)
+   * @param {number} y 網格 y 座標 (0~14)
+   * @param {number} role 1: 黑子, 2: 白子
+   * @param {number} opacity 透明度 (0~1)
+   */
+  drawPiece(x, y, role, opacity = 1) {
+    if (!role) return;
+
+    const ctx = this.ctx;
+    const cx = this.margin + x * this.cellSize;
+    const cy = this.margin + y * this.cellSize;
+    const r = this.pieceRadius;
+
+    ctx.save();
+    ctx.globalAlpha = opacity;
+
+    // 棋子投影陰影
+    if (opacity >= 0.8) {
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+    }
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+
+    // 光影漸變 (Radial Gradient)
+    const lightOffsetX = cx - r * 0.3;
+    const lightOffsetY = cy - r * 0.3;
+    const grad = ctx.createRadialGradient(lightOffsetX, lightOffsetY, r * 0.1, cx, cy, r);
+
+    if (role === 1) {
+      // 黑棋：微光澤金屬深墨色
+      grad.addColorStop(0, '#475569');
+      grad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = grad;
+      ctx.fill();
+    } else {
+      // 白棋：象牙白微光
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.85, '#e2e8f0');
+      grad.addColorStop(1, '#94a3b8');
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  /**
+   * 標註最新落子位置（高亮標記）
+   * @param {number} x 網格 x 座標
+   * @param {number} y 網格 y 座標
+   */
+  drawLastMoveMark(x, y) {
+    const ctx = this.ctx;
+    const cx = this.margin + x * this.cellSize;
+    const cy = this.margin + y * this.cellSize;
+
+    ctx.save();
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /**
+   * 滑鼠移動時於合法空位交叉點顯示半透明預覽棋子
+   * @param {number} x 網格 x 座標
+   * @param {number} y 網格 y 座標
+   * @param {number} role 1: 黑子, 2: 白子
+   */
+  drawHoverPiece(x, y, role) {
+    if (x == null || y == null) return;
+    this.drawPiece(x, y, role, 0.45);
+  }
+
+  /**
+   * 將滑鼠在 Canvas 上的偏移座標轉換為網格交叉點座標 (0~14)
+   * @param {number} offsetX 
+   * @param {number} offsetY 
+   * @returns {{x: number, y: number} | null}
+   */
+  getGridPosition(offsetX, offsetY) {
+    const col = Math.round((offsetX - this.margin) / this.cellSize);
+    const row = Math.round((offsetY - this.margin) / this.cellSize);
+
+    // 邊界防呆
+    if (col < 0 || col >= ChessBoard.BOARD_SIZE || row < 0 || row >= ChessBoard.BOARD_SIZE) {
+      return null;
+    }
+
+    // 計算點擊位置與交叉點中心的距離差，避免點在格線中間偏遠處判定
+    const targetX = this.margin + col * this.cellSize;
+    const targetY = this.margin + row * this.cellSize;
+    const dist = Math.hypot(offsetX - targetX, offsetY - targetY);
+
+    if (dist <= this.cellSize * 0.48) {
+      return { x: col, y: row };
+    }
+    return null;
+  }
+
+  /**
+   * 完整重繪棋盤狀態
+   * @param {Array<Array<number>>} boardMatrix 15x15 棋盤二維陣列 (0: 空, 1: 黑, 2: 白)
+   * @param {{x: number, y: number} | null} lastMove 最後落子座標
+   */
+  render(boardMatrix, lastMove = null) {
+    this.clear();
+    this.drawGrid();
+
+    if (!boardMatrix) return;
+
+    for (let r = 0; r < ChessBoard.BOARD_SIZE; r++) {
+      for (let c = 0; c < ChessBoard.BOARD_SIZE; c++) {
+        const piece = boardMatrix[r][c];
+        if (piece === 1 || piece === 2) {
+          this.drawPiece(c, r, piece);
+        }
+      }
+    }
+
+    if (lastMove && lastMove.x != null && lastMove.y != null) {
+      this.drawLastMoveMark(lastMove.x, lastMove.y);
+    }
+  }
+}
+
+// 供瀏覽器全域存取
+window.ChessBoard = ChessBoard;
+
+/**
+ * 五子棋智慧 AI 核心模組
+ * 包含棋型啟發式評估、候選點鄰域剪枝、Minimax 與 Alpha-Beta 剪枝演算法
+ */
+class GomokuAI {
+  static BOARD_SIZE = 15;
+
+  // 棋型權重分數表
+  static SCORE = {
+    WIN: 1000000,       // 連五 (必勝)
+    LIVE_FOUR: 100000,  // 活四 (必殺)
+    RUSH_FOUR: 10000,   // 衝四 / 眠四
+    LIVE_THREE: 8000,   // 活三
+    SLEEP_THREE: 1000,  // 眠三
+    LIVE_TWO: 800,      // 活二
+    SLEEP_TWO: 100,     // 眠二
+    ONE: 10             // 單子
+  };
+
+  /**
+   * 取得 AI 下一步落子座標
+   * @param {Array<Array<number>>} boardMatrix 15x15 棋盤二維陣列
+   * @param {number} aiRole AI 執子角色 (ROLE_BLACK 或 ROLE_WHITE)
+   * @param {string} difficulty 難度 ('easy' | 'normal' | 'hard')
+   * @returns {{x: number, y: number}}
+   */
+  static getNextMove(boardMatrix, aiRole = 2, difficulty = 'normal') {
+    const size = GomokuAI.BOARD_SIZE;
+    const opponentRole = aiRole === 1 ? 2 : 1;
+
+    // 1. 開局第一手：棋盤全空時，直接佔領天元 (7, 7)
+    let isEmptyBoard = true;
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (boardMatrix[r][c] !== 0) {
+          isEmptyBoard = false;
+          break;
+        }
+      }
+      if (!isEmptyBoard) break;
+    }
+    if (isEmptyBoard) {
+      return { x: 7, y: 7 };
+    }
+
+    // 2. 獲取候選點（鄰近現存棋子半徑 1~2 格之空位）
+    const candidates = GomokuAI.getCandidateMoves(boardMatrix);
+    if (candidates.length === 0) {
+      return { x: 7, y: 7 };
+    }
+
+    // 若僅有一個合法點
+    if (candidates.length === 1) {
+      return candidates[0];
+    }
+
+    // 3. 根據難度進行策略決策
+    if (difficulty === 'easy') {
+      return GomokuAI.getEasyMove(boardMatrix, candidates, aiRole, opponentRole);
+    } else if (difficulty === 'hard') {
+      return GomokuAI.getHardMove(boardMatrix, candidates, aiRole, opponentRole);
+    } else {
+      // 預設 normal
+      return GomokuAI.getNormalMove(boardMatrix, candidates, aiRole, opponentRole);
+    }
+  }
+
+  /**
+   * 生成候選落子點（以已落子點為中心擴展 1~2 格的空位）
+   */
+  static getCandidateMoves(boardMatrix) {
+    const size = GomokuAI.BOARD_SIZE;
+    const visited = Array.from({ length: size }, () => new Array(size).fill(false));
+    const candidates = [];
+
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (boardMatrix[r][c] !== 0) {
+          // 遍歷周圍 1~2 範圍
+          for (let dr = -2; dr <= 2; dr++) {
+            for (let dc = -2; dc <= 2; dc++) {
+              const nr = r + dr;
+              const nc = c + dc;
+              if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                if (boardMatrix[nr][nc] === 0 && !visited[nr][nc]) {
+                  visited[nr][nc] = true;
+                  candidates.push({ x: nc, y: nr });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return candidates;
+  }
+
+  /**
+   * 評估單點落子之啟發式攻防分數
+   */
+  static evaluatePoint(boardMatrix, x, y, role, opponentRole) {
+    // 自身進攻得分
+    const attackScore = GomokuAI.evaluatePositionPattern(boardMatrix, x, y, role);
+    // 阻擋對手防守得分
+    const defenseScore = GomokuAI.evaluatePositionPattern(boardMatrix, x, y, opponentRole);
+
+    // 防守權重係數提高到 1.15，優先破壞對方的連鎖
+    return attackScore + defenseScore * 1.15;
+  }
+
+  /**
+   * 計算特定角色在 (x, y) 落子後的型態價值
+   */
+  static evaluatePositionPattern(boardMatrix, x, y, role) {
+    const size = GomokuAI.BOARD_SIZE;
+    const directions = [
+      { dx: 1, dy: 0 },
+      { dx: 0, dy: 1 },
+      { dx: 1, dy: 1 },
+      { dx: 1, dy: -1 }
+    ];
+
+    let totalScore = 0;
+
+    for (let i = 0; i < 4; i++) {
+      const { dx, dy } = directions[i];
+      let count = 1;      // 連續棋子數 (包含即將下的 (x, y))
+      let openEnds = 0;   // 開放端數
+
+      // 正向探測
+      let step = 1;
+      while (true) {
+        const nx = x + dx * step;
+        const ny = y + dy * step;
+        if (nx < 0 || nx >= size || ny < 0 || ny >= size) break;
+        if (boardMatrix[ny][nx] === role) {
+          count++;
+          step++;
+        } else if (boardMatrix[ny][nx] === 0) {
+          openEnds++;
+          break;
+        } else {
+          break; // 被對手阻擋
+        }
+      }
+
+      // 反向探測
+      step = 1;
+      while (true) {
+        const nx = x - dx * step;
+        const ny = y - dy * step;
+        if (nx < 0 || nx >= size || ny < 0 || ny >= size) break;
+        if (boardMatrix[ny][nx] === role) {
+          count++;
+          step++;
+        } else if (boardMatrix[ny][nx] === 0) {
+          openEnds++;
+          break;
+        } else {
+          break;
+        }
+      }
+
+      // 根據連子數與開放端判定分數
+      totalScore += GomokuAI.getPatternScore(count, openEnds);
+    }
+
+    return totalScore;
+  }
+
+  /**
+   * 根據連子與兩端開放狀態映射權重分數
+   */
+  static getPatternScore(count, openEnds) {
+    if (count >= 5) return GomokuAI.SCORE.WIN;
+    if (count === 4) {
+      if (openEnds === 2) return GomokuAI.SCORE.LIVE_FOUR;
+      if (openEnds === 1) return GomokuAI.SCORE.RUSH_FOUR;
+      return 0;
+    }
+    if (count === 3) {
+      if (openEnds === 2) return GomokuAI.SCORE.LIVE_THREE;
+      if (openEnds === 1) return GomokuAI.SCORE.SLEEP_THREE;
+      return 0;
+    }
+    if (count === 2) {
+      if (openEnds === 2) return GomokuAI.SCORE.LIVE_TWO;
+      if (openEnds === 1) return GomokuAI.SCORE.SLEEP_TWO;
+      return 0;
+    }
+    if (count === 1 && openEnds > 0) {
+      return GomokuAI.SCORE.ONE;
+    }
+    return 0;
+  }
+
+  /**
+   * 簡單難度決策：從評分前段候選點中隨機挑選或加噪聲
+   */
+  static getEasyMove(boardMatrix, candidates, aiRole, opponentRole) {
+    const scoredMoves = candidates.map(pt => ({
+      x: pt.x,
+      y: pt.y,
+      score: GomokuAI.evaluatePoint(boardMatrix, pt.x, pt.y, aiRole, opponentRole)
+    }));
+
+    scoredMoves.sort((a, b) => b.score - a.score);
+
+    // 若有直接五連或必殺，依舊執行
+    if (scoredMoves[0].score >= GomokuAI.SCORE.LIVE_FOUR) {
+      return scoredMoves[0];
+    }
+
+    // 否則取前 4 個候選點隨機擇一
+    const topCount = Math.min(4, scoredMoves.length);
+    const randomIndex = Math.floor(Math.random() * topCount);
+    return scoredMoves[randomIndex];
+  }
+
+  /**
+   * 普通難度決策：最佳啟發式攻防評分直接落子
+   */
+  static getNormalMove(boardMatrix, candidates, aiRole, opponentRole) {
+    let bestMove = candidates[0];
+    let maxScore = -Infinity;
+
+    for (let i = 0; i < candidates.length; i++) {
+      const pt = candidates[i];
+      const score = GomokuAI.evaluatePoint(boardMatrix, pt.x, pt.y, aiRole, opponentRole);
+      if (score > maxScore) {
+        maxScore = score;
+        bestMove = pt;
+      }
+    }
+
+    return bestMove;
+  }
+
+  /**
+   * 困難難度決策：Minimax + Alpha-Beta 剪枝 (搜尋深度 2 層並排序)
+   */
+  static getHardMove(boardMatrix, candidates, aiRole, opponentRole) {
+    // 預先對候選點進行啟發式評分排序，縮小深度搜尋分支
+    const scoredMoves = candidates.map(pt => ({
+      x: pt.x,
+      y: pt.y,
+      score: GomokuAI.evaluatePoint(boardMatrix, pt.x, pt.y, aiRole, opponentRole)
+    }));
+    scoredMoves.sort((a, b) => b.score - a.score);
+
+    // 若直接有五連必勝手，直接下
+    if (scoredMoves[0].score >= GomokuAI.SCORE.WIN) {
+      return scoredMoves[0];
+    }
+
+    // 截取前 12 個最具威脅點進行 Minimax 深度搜尋
+    const prunedCandidates = scoredMoves.slice(0, 12);
+
+    let bestMove = prunedCandidates[0];
+    let alpha = -Infinity;
+    const beta = Infinity;
+    const searchDepth = 2; // 2 層前瞻預判對手最佳應對
+
+    for (let i = 0; i < prunedCandidates.length; i++) {
+      const move = prunedCandidates[i];
+
+      // 虛擬落子 (AI)
+      boardMatrix[move.y][move.x] = aiRole;
+
+      const evalScore = GomokuAI.minimax(
+        boardMatrix,
+        searchDepth - 1,
+        alpha,
+        beta,
+        false,
+        aiRole,
+        opponentRole
+      );
+
+      // 回溯還原
+      boardMatrix[move.y][move.x] = 0;
+
+      if (evalScore > alpha) {
+        alpha = evalScore;
+        bestMove = move;
+      }
+    }
+
+    return bestMove;
+  }
+
+  /**
+   * Minimax 核心搭配 Alpha-Beta 剪枝
+   */
+  static minimax(board, depth, alpha, beta, isMaximizing, aiRole, opponentRole) {
+    if (depth === 0) {
+      return GomokuAI.evaluateBoardState(board, aiRole, opponentRole);
+    }
+
+    const currentRole = isMaximizing ? aiRole : opponentRole;
+    const candidates = GomokuAI.getCandidateMoves(board);
+
+    // 啟發式排序取前 8 個關鍵點
+    const scored = candidates.map(pt => ({
+      x: pt.x,
+      y: pt.y,
+      score: GomokuAI.evaluatePoint(board, pt.x, pt.y, currentRole, isMaximizing ? opponentRole : aiRole)
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    const topMoves = scored.slice(0, 8);
+
+    if (isMaximizing) {
+      let maxEval = -Infinity;
+      for (const move of topMoves) {
+        board[move.y][move.x] = aiRole;
+        const evaluation = GomokuAI.minimax(board, depth - 1, alpha, beta, false, aiRole, opponentRole);
+        board[move.y][move.x] = 0;
+
+        maxEval = Math.max(maxEval, evaluation);
+        alpha = Math.max(alpha, evaluation);
+        if (beta <= alpha) break; // 剪枝
+      }
+      return maxEval;
+    } else {
+      let minEval = Infinity;
+      for (const move of topMoves) {
+        board[move.y][move.x] = opponentRole;
+        const evaluation = GomokuAI.minimax(board, depth - 1, alpha, beta, true, aiRole, opponentRole);
+        board[move.y][move.x] = 0;
+
+        minEval = Math.min(minEval, evaluation);
+        beta = Math.min(beta, evaluation);
+        if (beta <= alpha) break; // 剪枝
+      }
+      return minEval;
+    }
+  }
+
+  /**
+   * 整盤棋局評估
+   */
+  static evaluateBoardState(board, aiRole, opponentRole) {
+    const size = GomokuAI.BOARD_SIZE;
+    let aiScore = 0;
+    let oppScore = 0;
+
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (board[r][c] === aiRole) {
+          aiScore += GomokuAI.evaluatePositionPattern(board, c, r, aiRole);
+        } else if (board[r][c] === opponentRole) {
+          oppScore += GomokuAI.evaluatePositionPattern(board, c, r, opponentRole);
+        }
+      }
+    }
+
+    return aiScore - oppScore * 1.1;
+  }
+}
+
+// 供全域存取
+window.GomokuAI = GomokuAI;
+
+/**
+ * 遊戲流程控制器與全域狀態管理模組
+ * 負責組裝協調 ChessBoard, GameRules, GomokuAI 並與 DOM 事件綁定
+ */
+class GameManager {
+  constructor() {
+    // 核心模組實例
+    this.board = new ChessBoard('chessBoard');
+    this.canvas = document.getElementById('chessBoard');
+
+    // DOM 控制項參照
+    this.domGameMode = document.getElementById('gameMode');
+    this.domDifficultyGroup = document.getElementById('difficultyGroup');
+    this.domDifficulty = document.getElementById('difficulty');
+    this.domBtnRestart = document.getElementById('btnRestart');
+    this.domBtnUndo = document.getElementById('btnUndo');
+    this.domCurrentTurn = document.getElementById('currentTurn');
+    this.domMoveCount = document.getElementById('moveCount');
+    this.domModalWinner = document.getElementById('modalWinner');
+    this.domWinnerText = document.getElementById('winnerText');
+    this.domBtnPlayAgain = document.getElementById('btnPlayAgain');
+
+    // 遊戲狀態屬性
+    this.boardMatrix = GameRules.createEmptyBoard();
+    this.moveHistory = []; // 元素格式: { x, y, role }
+    this.currentRole = GameRules.ROLE_BLACK;
+    this.gameMode = this.domGameMode.value || 'pve';
+    this.difficulty = this.domDifficulty.value || 'normal';
+    this.isGameOver = false;
+    this.isAiThinking = false;
+    this.hoverPos = null;
+
+    this.bindEvents();
+    this.resetGame();
+  }
+
+  /**
+   * 綁定使用者介面與 Canvas 互動事件
+   */
+  bindEvents() {
+    // Canvas 點擊落子 (滑鼠)
+    this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+
+    // Canvas 觸控落子 (支援行動裝置 / iOS Safari)
+    this.canvas.addEventListener('touchend', (e) => this.handleCanvasTouch(e), { passive: false });
+
+    // Canvas 游標移動即時預覽
+    this.canvas.addEventListener('mousemove', (e) => this.handleCanvasMouseMove(e));
+    this.canvas.addEventListener('mouseleave', () => this.handleCanvasMouseLeave());
+
+    // 頂部控制列事件
+    this.domGameMode.addEventListener('change', () => this.handleModeChange());
+    this.domDifficulty.addEventListener('change', (e) => {
+      this.difficulty = e.target.value;
+    });
+    this.domBtnRestart.addEventListener('click', () => this.resetGame());
+    this.domBtnUndo.addEventListener('click', () => this.handleUndo());
+
+    // 結算彈窗再玩一局按鈕
+    this.domBtnPlayAgain.addEventListener('click', () => {
+      this.closeModal();
+      this.resetGame();
+    });
+  }
+
+  /**
+   * 重設局勢至開局狀態
+   */
+  resetGame() {
+    this.boardMatrix = GameRules.createEmptyBoard();
+    this.moveHistory = [];
+    this.currentRole = GameRules.ROLE_BLACK;
+    this.isGameOver = false;
+    this.isAiThinking = false;
+    this.hoverPos = null;
+
+    this.closeModal();
+    this.updateStatusView();
+    this.renderBoard();
+  }
+
+  /**
+   * 切換遊戲對戰模式
+   */
+  handleModeChange() {
+    this.gameMode = this.domGameMode.value;
+    if (this.gameMode === 'pvp') {
+      this.domDifficultyGroup.style.display = 'none';
+    } else {
+      this.domDifficultyGroup.style.display = 'flex';
+    }
+    this.resetGame();
+  }
+
+  /**
+   * 計算滑鼠或觸控在 Canvas 內部實際像素座標 (支援 RWD 自適應縮放換算)
+   */
+  getCanvasCoordinates(clientX, clientY) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    return {
+      offsetX: (clientX - rect.left) * scaleX,
+      offsetY: (clientY - rect.top) * scaleY
+    };
+  }
+
+  /**
+   * 處理 Canvas 點擊落子
+   */
+  handleCanvasClick(event) {
+    if (this.isGameOver || this.isAiThinking) return;
+
+    // 若為人機對局且輪到 AI 思考，禁止點擊
+    if (this.gameMode === 'pve' && this.currentRole === GameRules.ROLE_WHITE) {
+      return;
+    }
+
+    const { offsetX, offsetY } = this.getCanvasCoordinates(event.clientX, event.clientY);
+    const pos = this.board.getGridPosition(offsetX, offsetY);
+    if (!pos) return;
+
+    if (GameRules.isValidMove(this.boardMatrix, pos.x, pos.y)) {
+      this.makeMove(pos.x, pos.y, this.currentRole);
+    }
+  }
+
+  /**
+   * 處理 Canvas 觸控落子 (iOS Safari / 行動裝置)
+   */
+  handleCanvasTouch(event) {
+    if (this.isGameOver || this.isAiThinking) return;
+    if (this.gameMode === 'pve' && this.currentRole === GameRules.ROLE_WHITE) return;
+
+    if (event.changedTouches && event.changedTouches.length > 0) {
+      event.preventDefault(); // 阻止頁面手勢縮放與滾動干擾
+      const touch = event.changedTouches[0];
+      const { offsetX, offsetY } = this.getCanvasCoordinates(touch.clientX, touch.clientY);
+      const pos = this.board.getGridPosition(offsetX, offsetY);
+      if (!pos) return;
+
+      if (GameRules.isValidMove(this.boardMatrix, pos.x, pos.y)) {
+        this.makeMove(pos.x, pos.y, this.currentRole);
+      }
+    }
+  }
+
+  /**
+   * 處理游標移動預覽
+   */
+  handleCanvasMouseMove(event) {
+    if (this.isGameOver || this.isAiThinking) return;
+    if (this.gameMode === 'pve' && this.currentRole === GameRules.ROLE_WHITE) return;
+
+    const { offsetX, offsetY } = this.getCanvasCoordinates(event.clientX, event.clientY);
+    const pos = this.board.getGridPosition(offsetX, offsetY);
+    if (pos && GameRules.isValidMove(this.boardMatrix, pos.x, pos.y)) {
+      this.hoverPos = pos;
+      this.renderBoard();
+      this.board.drawHoverPiece(pos.x, pos.y, this.currentRole);
+    } else {
+      if (this.hoverPos) {
+        this.hoverPos = null;
+        this.renderBoard();
+      }
+    }
+  }
+
+  /**
+   * 處理游標離開棋盤
+   */
+  handleCanvasMouseLeave() {
+    if (this.hoverPos) {
+      this.hoverPos = null;
+      this.renderBoard();
+    }
+  }
+
+  /**
+   * 執行實質落子
+   */
+  makeMove(x, y, role) {
+    this.boardMatrix[y][x] = role;
+    this.moveHistory.push({ x, y, role });
+    this.hoverPos = null;
+
+    // 檢查勝負
+    const winResult = GameRules.checkWin(this.boardMatrix, x, y, role);
+    if (winResult.win) {
+      this.isGameOver = true;
+      this.renderBoard();
+      this.updateStatusView();
+      this.showGameOverModal(winResult.winner);
+      return;
+    }
+
+    // 檢查和局
+    if (GameRules.checkDraw(this.boardMatrix)) {
+      this.isGameOver = true;
+      this.renderBoard();
+      this.updateStatusView();
+      this.showGameOverModal(null, true);
+      return;
+    }
+
+    // 切換回合
+    this.currentRole = (role === GameRules.ROLE_BLACK) ? GameRules.ROLE_WHITE : GameRules.ROLE_BLACK;
+    this.renderBoard();
+    this.updateStatusView();
+
+    // 人機模式下自動觸發 AI 運算
+    if (!this.isGameOver && this.gameMode === 'pve' && this.currentRole === GameRules.ROLE_WHITE) {
+      this.triggerAiMove();
+    }
+  }
+
+  /**
+   * 觸發 AI 自動應手
+   */
+  triggerAiMove() {
+    this.isAiThinking = true;
+    this.updateStatusView();
+
+    // 透過 setTimeout 讓出主線程以更新 UI
+    setTimeout(() => {
+      if (this.isGameOver) {
+        this.isAiThinking = false;
+        return;
+      }
+
+      const aiMove = GomokuAI.getNextMove(
+        this.boardMatrix,
+        GameRules.ROLE_WHITE,
+        this.difficulty
+      );
+
+      this.isAiThinking = false;
+
+      if (aiMove && GameRules.isValidMove(this.boardMatrix, aiMove.x, aiMove.y)) {
+        this.makeMove(aiMove.x, aiMove.y, GameRules.ROLE_WHITE);
+      }
+    }, 200);
+  }
+
+  /**
+   * 處理悔棋
+   */
+  handleUndo() {
+    if (this.isAiThinking || this.moveHistory.length === 0) return;
+
+    if (this.gameMode === 'pve') {
+      // 人機對戰：通常需回退 2 步 (AI 一步 + 玩家一步)
+      if (this.isGameOver) {
+        // 若已結算，取消結束狀態並退 1 步或 2 步
+        this.isGameOver = false;
+        this.closeModal();
+      }
+
+      const stepsToUndo = this.moveHistory.length >= 2 ? 2 : 1;
+      for (let i = 0; i < stepsToUndo; i++) {
+        const last = this.moveHistory.pop();
+        if (last) {
+          this.boardMatrix[last.y][last.x] = GameRules.ROLE_EMPTY;
+        }
+      }
+      this.currentRole = GameRules.ROLE_BLACK;
+    } else {
+      // 雙人對戰：回退 1 步
+      if (this.isGameOver) {
+        this.isGameOver = false;
+        this.closeModal();
+      }
+      const last = this.moveHistory.pop();
+      if (last) {
+        this.boardMatrix[last.y][last.x] = GameRules.ROLE_EMPTY;
+        this.currentRole = last.role; // 回退為該步玩家
+      }
+    }
+
+    this.renderBoard();
+    this.updateStatusView();
+  }
+
+  /**
+   * 渲染棋盤與最後落子標記
+   */
+  renderBoard() {
+    const lastMove = this.moveHistory.length > 0 ? this.moveHistory[this.moveHistory.length - 1] : null;
+    this.board.render(this.boardMatrix, lastMove);
+  }
+
+  /**
+   * 更新狀態列展示
+   */
+  updateStatusView() {
+    this.domMoveCount.textContent = this.moveHistory.length;
+
+    if (this.isGameOver) {
+      this.domCurrentTurn.textContent = '對局結束';
+      this.domCurrentTurn.className = 'status-value badge-turn turn-white';
+      return;
+    }
+
+    if (this.isAiThinking) {
+      this.domCurrentTurn.textContent = '電腦思考中...';
+      this.domCurrentTurn.className = 'status-value badge-turn turn-thinking';
+      return;
+    }
+
+    if (this.currentRole === GameRules.ROLE_BLACK) {
+      this.domCurrentTurn.textContent = '黑棋落子';
+      this.domCurrentTurn.className = 'status-value badge-turn turn-black';
+    } else {
+      if (this.gameMode === 'pve') {
+        this.domCurrentTurn.textContent = '白棋 (電腦)';
+      } else {
+        this.domCurrentTurn.textContent = '白棋落子';
+      }
+      this.domCurrentTurn.className = 'status-value badge-turn turn-white';
+    }
+  }
+
+  /**
+   * 彈出結算視窗
+   */
+  showGameOverModal(winner, isDraw = false) {
+    if (isDraw) {
+      this.domWinnerText.textContent = '勢均力敵 · 和局！';
+    } else if (winner === GameRules.ROLE_BLACK) {
+      this.domWinnerText.textContent = (this.gameMode === 'pve') ? '恭喜您獲勝！(黑棋)' : '黑棋獲勝！';
+    } else if (winner === GameRules.ROLE_WHITE) {
+      this.domWinnerText.textContent = (this.gameMode === 'pve') ? '電腦獲勝！(白棋)' : '白棋獲勝！';
+    }
+    this.domModalWinner.classList.remove('hidden');
+  }
+
+  /**
+   * 關閉結算彈窗
+   */
+  closeModal() {
+    this.domModalWinner.classList.add('hidden');
+  }
+}
+
+// 頁面載入完成後自動初始化五子棋對弈系統
+window.addEventListener('DOMContentLoaded', () => {
+  window.gameManager = new GameManager();
+});
+  </script>
+</body>
+</html>

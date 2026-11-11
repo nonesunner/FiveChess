@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="五子棋">
+  <meta name="theme-color" content="#f8fafc">
+  <title>五子棋 Web SPA</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- 標題與資訊區 -->
+    <header class="game-header">
+      <h1 class="game-title">五子棋 對弈系統</h1>
+      <p class="game-subtitle">簡約現代風格 · 單頁應用 (SPA)</p>
+    </header>
+
+    <!-- 控制面板卡片 -->
+    <section class="control-panel card">
+      <div class="control-group">
+        <label for="gameMode">對戰模式：</label>
+        <select id="gameMode" class="form-control">
+          <option value="pve" selected>人機對戰</option>
+          <option value="pvp">雙人對戰</option>
+        </select>
+      </div>
+
+      <div class="control-group" id="difficultyGroup">
+        <label for="difficulty">難度選擇：</label>
+        <select id="difficulty" class="form-control">
+          <option value="easy">簡單</option>
+          <option value="normal" selected>普通</option>
+          <option value="hard">困難</option>
+        </select>
+      </div>
+
+      <div class="action-buttons">
+        <button id="btnRestart" class="btn btn-primary">重新開始</button>
+        <button id="btnUndo" class="btn btn-secondary">悔棋</button>
+      </div>
+    </section>
+
+    <!-- 狀態展示區 -->
+    <section class="status-panel card">
+      <div class="status-item">
+        <span class="status-label">當前回合：</span>
+        <span id="currentTurn" class="status-value badge-turn turn-black">黑棋落子</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">總落子數：</span>
+        <span id="moveCount" class="status-value font-mono">0</span>
+      </div>
+    </section>
+
+    <!-- 棋盤畫布容器 -->
+    <main class="board-wrapper card">
+      <canvas id="chessBoard" width="600" height="600"></canvas>
+    </main>
+
+    <!-- 勝利結算提示彈窗 -->
+    <div id="modalWinner" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="winnerText" class="modal-title">黑棋獲勝！</h2>
+        </div>
+        <p class="modal-desc">恭喜完成精彩對局！</p>
+        <div class="modal-actions">
+          <button id="btnPlayAgain" class="btn btn-primary">再玩一局</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模組化串接預留腳本 -->
+  <script src="js/rules.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/game.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+  </script>
+</body>
+</html>
